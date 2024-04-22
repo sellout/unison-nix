@@ -20,6 +20,30 @@ Currenty ARM builds aren't published for UCM, so if you are on an ARM-based Mac 
 nix profile install --system x86_64-darwin github:ceedubs/unison-nix#ucm
 ```
 
+**Use from home-manager:**
+
+In your home-manager's `flake.nix`, reference this repository under `inputs`, e.g.:
+
+```nix
+unison-lang = {
+  url = "github:ceedubs/unison-nix";
+  inputs.nixpkgs.follows = "nixpkgs";
+};
+```
+
+then add the unison-lang overlay:
+
+```nix
+pkgs = import nixpkgs {
+  inherit system;
+  overlays = [ unison-lang.overlay ];
+};
+```
+
+Finally, in your `home.nix`, just add the `unison-ucm` package as you normally would.
+
+An example is available [here](https://github.com/bbarker/dotfiles/tree/6b0c9c2b5a59e55a4a25700fe0833e5a95d7f84c).
+
 **Older versions of Nix:**
 
 ```
