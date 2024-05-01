@@ -1,2 +1,2 @@
-{ ... } @ args:
+{...} @ args:
 import ./nix/default.nix args
