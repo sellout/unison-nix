@@ -2,10 +2,12 @@
   description = "Support for the Unison programming language";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-23.11";
+    nixpkgs.url = "github:nixos/nixpkgs/release-23.11";
     flake-utils.url = "github:numtide/flake-utils";
-    unison.url = "github:unisonweb/unison";
-    unison.flake = false;
+    unison = {
+      flake = false;
+      url = "github:unisonweb/unison";
+    };
   };
 
   outputs = {
@@ -16,10 +18,10 @@
   }: let
     systems = flake-utils.lib.defaultSystems;
 
-    overlay = final: prev: {
+    localPackages = final: let
       darwin-security-hack = final.callPackage ./nix/darwin-security-hack.nix {};
-
-      unison-ucm = final.callPackage ./nix/ucm.nix {};
+    in {
+      ucm = final.callPackage ./nix/ucm.nix {inherit darwin-security-hack;};
 
       buildUnisonFromTranscript = final.callPackage ./nix/build-from-transcript.nix {};
 
@@ -27,39 +29,51 @@
 
       prep-unison-scratch = final.callPackage ./nix/prep-unison-scratch {};
 
-      vimPlugins =
-        prev.vimPlugins
-        // {
-          vim-unison = final.vimUtils.buildVimPlugin {
-            name = "vim-unison";
-            src = unison + "/editor-support/vim";
-          };
-        };
+      vim-unison = final.vimUtils.buildVimPlugin {
+        name = "vim-unison";
+        src = unison + "/editor-support/vim";
+      };
     };
   in
-    flake-utils.lib.eachSystem systems
+    {
+      overlays = {
+        default = final: prev: let
+          localPkgs = localPackages final;
+        in {
+          inherit
+            (localPkgs)
+            buildUnisonFromTranscript
+            buildUnisonShareProject
+            prep-unison-scratch
+            ;
+
+          ## This is the name `ucm` already has in Nixpkgs.
+          unison-ucm = localPkgs.ucm;
+
+          vimPlugins = prev.vimPlugins // self.overlays.vim final prev;
+        };
+
+        vim = final: prev: {inherit (localPackages final) vim-unison;};
+      };
+
+      ## Deprecated
+      overlay = self.overlays.default;
+    }
+    // flake-utils.lib.eachSystem systems
     (
       system: let
-        isDarwin = sys:
-          builtins.match ".*darwin" sys != null;
-        pkgs = import nixpkgs {
-          inherit system;
-          overlays = [overlay];
-        };
-        ucm = pkgs.unison-ucm;
+        pkgs = import nixpkgs {inherit system;};
       in {
-        packages = rec {
-          inherit ucm;
+        packages =
+          {
+            default = self.packages.${system}.ucm;
+          }
+          // localPackages pkgs;
 
-          vim-unison = pkgs.vimPlugins.vim-unison;
-
-          inherit (pkgs) prep-unison-scratch buildUnisonFromTranscript buildUnisonShareProject;
-        };
-
-        defaultPackage = ucm;
+        ## Deprecated
+        defaultPackage = self.packages.${system}.default;
 
         formatter = pkgs.alejandra;
       }
-    )
-    // {inherit overlay;};
+    );
 }
