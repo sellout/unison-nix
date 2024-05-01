@@ -69,25 +69,30 @@
           };
       };
 
-      homeConfigurations.example = home-manager.lib.homeManagerConfiguration {
-        pkgs = import nixpkgs {
-          system = "aarch64-darwin";
-          overlays = [self.overlays.default];
+      homeConfigurations = let
+        module = {pkgs, ...}: {
+          home = {
+            packages = [pkgs.unison-ucm];
+            stateVersion = "23.11";
+            username = "example";
+            homeDirectory = "/home/example";
+          };
+          programs.vim = {
+            enable = true;
+            plugins = with pkgs.vimPlugins; [vim-unison];
+          };
         };
-        modules = [
-          ({pkgs, ...}: {
-            home = {
-              packages = [pkgs.unison-ucm];
-              stateVersion = "23.11";
-              username = "example";
-              homeDirectory = "/home/example";
+        config = system:
+          home-manager.lib.homeManagerConfiguration {
+            pkgs = import nixpkgs {
+              inherit system;
+              overlays = [self.overlays.default];
             };
-            programs.vim = {
-              enable = true;
-              plugins = with pkgs.vimPlugins; [vim-unison];
-            };
-          })
-        ];
+            modules = [module];
+          };
+      in {
+        aarch64-darwin-example = config "aarch64-darwin";
+        x86_64-linux-example = config "x86_64-linux";
       };
     }
     // flake-utils.lib.eachSystem systems
