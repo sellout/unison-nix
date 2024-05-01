@@ -3,30 +3,26 @@
   lib,
 }:
 /*
-  *
 Compile functions from a project hosted on Unison Share into executables.
 */
 {
   pname,
   version,
   /*
-    *
   The Unison Share user handle of owner of the project to compile.
   For example in the project `@unison/base` the user handle is `unison`.
   */
   userHandle,
   /*
-    *
   The name of the project to compile.
   For example in the project `@unison/base` the project name is `base`.
   */
   projectName,
   /*
-  * A release version of the project to compile (ex: `3.1.2`).
+  A release version of the project to compile (ex: `3.1.2`).
   */
   projectReleaseVersion ? args.version,
   /*
-    *
   The compiledHash is the hash of the compiled Unison code. This is needed
   because Nix builds restrict network access unless the output hash is known
   ahead of time (which helps with reproducibility and caching). You won't know
@@ -36,7 +32,6 @@ Compile functions from a project hosted on Unison Share into executables.
   */
   compiledHash,
   /*
-    *
   A list of executables to compile. Each key is an executable name and each
   value is a fully-qualified entry function name. For example, `snake =
   examples.snake.main` will generate a `/bin/snake` executable out of the

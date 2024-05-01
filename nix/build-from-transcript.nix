@@ -3,7 +3,7 @@
   lib,
   makeWrapper,
   stdenv,
-  unison-ucm,
+  ucm,
 }: {
   pname,
   version,
@@ -25,7 +25,6 @@
   */
   src,
   /*
-    *
   The compiledHash is the hash of the compiled Unison code. This is needed
   because Nix builds restrict network access unless the output hash is known
   ahead of time (which helps with reproducibility and caching). You won't know
@@ -38,13 +37,13 @@
 }: let
   compiled = stdenv.mkDerivation {
     # include the ucm version and transcript hash in the derivation name so it is rebuilt if either changes
-    pname = pname + "_ucm-${unison-ucm.version}_${builtins.hashFile "sha256" src}";
+    pname = pname + "_ucm-${ucm.version}_${builtins.hashFile "sha256" src}";
     inherit version;
 
     nativeBuildInputs = [cacert];
     buildCommand = ''
       export XDG_DATA_HOME="$TMP/.local/share"
-      ${unison-ucm}/bin/ucm -C . transcript ${src}
+      ${ucm}/bin/ucm -C . transcript ${src}
       mkdir -p $out/share
       mv *.uc $out/share/
     '';
@@ -59,10 +58,10 @@ in
     nativeBuildInputs = [makeWrapper];
     buildInputs = [];
     buildCommand = ''
-      mkdir -p $out/bin
+        mkdir -p $out/bin
 
       for ucFile in ${compiled}/share/*.uc; do
-        makeWrapper "${unison-ucm}/bin/ucm" "$out/bin/$(basename "$ucFile" .uc)" \
+        makeWrapper "${ucm}/bin/ucm" "$out/bin/$(basename "$ucFile" .uc)" \
           --add-flags "run.compiled $ucFile"
       done
     '';

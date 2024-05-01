@@ -25,7 +25,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 {
   autoPatchelfHook,
-  darwin-security-hack ? null,
+  darwin-security-hack,
   fetchurl,
   fzf,
   git,
@@ -74,10 +74,10 @@ in
 
     nativeBuildInputs = [installShellFiles makeWrapper] ++ lib.optional (!stdenv.isDarwin) autoPatchelfHook;
 
-    darwinBuildInputs = lib.optional (darwin-security-hack != null) darwin-security-hack;
-    nonDarwinBuildInputs = [gmp];
-
-    buildInputs =
+    buildInputs = let
+      darwinBuildInputs = [darwin-security-hack];
+      nonDarwinBuildInputs = [gmp];
+    in
       [git less fzf ncurses zlib]
       ++ (
         if (stdenv.isDarwin)
