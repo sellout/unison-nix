@@ -21,10 +21,6 @@
 
       unison-ucm = final.callPackage ./nix/ucm.nix {};
 
-      buildUnisonFromTranscript = final.callPackage ./nix/build-from-transcript.nix {};
-
-      buildUnisonShareProject = final.callPackage ./nix/build-share-project.nix {};
-
       prep-unison-scratch = final.callPackage ./nix/prep-unison-scratch {};
 
       vimPlugins =
@@ -53,7 +49,7 @@
 
           vim-unison = pkgs.vimPlugins.vim-unison;
 
-          inherit (pkgs) prep-unison-scratch buildUnisonFromTranscript buildUnisonShareProject;
+          inherit (pkgs) prep-unison-scratch;
         };
 
         defaultPackage = ucm;
@@ -61,5 +57,21 @@
         formatter = pkgs.alejandra;
       }
     )
-    // {inherit overlay;};
+    // {
+      inherit overlay;
+
+      lib = let
+        buildUnisonFromTranscript = pkgs:
+          pkgs.callPackage ./nix/build-from-transcript.nix {
+            inherit (overlay pkgs pkgs) unison-ucm;
+          };
+      in {
+        inherit buildUnisonFromTranscript;
+
+        buildUnisonShareProject = pkgs:
+          pkgs.callPackage ./nix/build-share-project.nix {
+            buildUnisonFromTranscript = buildUnisonFromTranscript pkgs;
+          };
+      };
+    };
 }
