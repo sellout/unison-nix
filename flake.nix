@@ -4,14 +4,21 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-23.11";
     flake-utils.url = "github:numtide/flake-utils";
-    unison.url = "github:unisonweb/unison";
-    unison.flake = false;
+    home-manager = {
+      inputs.nixpkgs.follows = "nixpkgs";
+      url = "github:nix-community/home-manager/release-23.11";
+    };
+    unison = {
+      flake = false;
+      url = "github:unisonweb/unison";
+    };
   };
 
   outputs = {
     self,
     nixpkgs,
     flake-utils,
+    home-manager,
     unison,
   }: let
     systems = flake-utils.lib.defaultSystems;
@@ -75,5 +82,29 @@
             buildUnisonFromTranscript = buildUnisonFromTranscript pkgs;
           };
       };
+
+      homeConfigurations = builtins.listToAttrs (map (system: {
+        name = "${system}-example";
+        value = home-manager.lib.homeManagerConfiguration {
+          pkgs = import nixpkgs {
+            inherit system;
+            overlays = [self.overlays.default];
+          };
+          modules = [
+            ({pkgs, ...}: {
+              home = {
+                packages = [pkgs.unison-ucm];
+                stateVersion = "23.11";
+                username = "example";
+                homeDirectory = "/home/example";
+              };
+              programs.vim = {
+                enable = true;
+                plugins = with pkgs.vimPlugins; [vim-unison];
+              };
+            })
+          ];
+        };
+      }) ["x86_64-darwin" "x86_64-linux"]);
     };
 }
