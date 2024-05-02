@@ -8,52 +8,58 @@
     unison.flake = false;
   };
 
-  outputs = { self, nixpkgs, flake-utils, unison }:
-    let
-      systems = flake-utils.lib.defaultSystems;
+  outputs = {
+    self,
+    nixpkgs,
+    flake-utils,
+    unison,
+  }: let
+    systems = flake-utils.lib.defaultSystems;
 
-      overlay = final: prev: {
-        darwin-security-hack = final.callPackage ./nix/darwin-security-hack.nix { };
+    overlay = final: prev: {
+      darwin-security-hack = final.callPackage ./nix/darwin-security-hack.nix {};
 
-        unison-ucm = final.callPackage ./nix/ucm.nix { };
+      unison-ucm = final.callPackage ./nix/ucm.nix {};
 
-        buildUnisonFromTranscript = final.callPackage ./nix/build-from-transcript.nix { };
+      buildUnisonFromTranscript = final.callPackage ./nix/build-from-transcript.nix {};
 
-        buildUnisonShareProject = final.callPackage ./nix/build-share-project.nix { };
+      buildUnisonShareProject = final.callPackage ./nix/build-share-project.nix {};
 
-        prep-unison-scratch = final.callPackage ./nix/prep-unison-scratch { };
+      prep-unison-scratch = final.callPackage ./nix/prep-unison-scratch {};
 
-        vimPlugins = prev.vimPlugins // {
+      vimPlugins =
+        prev.vimPlugins
+        // {
           vim-unison = final.vimUtils.buildVimPlugin {
             name = "vim-unison";
             src = unison + "/editor-support/vim";
           };
         };
-
-      };
-    in
+    };
+  in
     flake-utils.lib.eachSystem systems
-      (
-        system:
-        let
-          isDarwin = sys:
-            builtins.match ".*darwin" sys != null;
-          pkgs = import nixpkgs {
-            inherit system;
-            overlays = [ overlay ];
-          };
-          ucm = pkgs.unison-ucm;
-        in
-        {
-          packages = rec {
-            inherit ucm;
+    (
+      system: let
+        isDarwin = sys:
+          builtins.match ".*darwin" sys != null;
+        pkgs = import nixpkgs {
+          inherit system;
+          overlays = [overlay];
+        };
+        ucm = pkgs.unison-ucm;
+      in {
+        packages = rec {
+          inherit ucm;
 
-            vim-unison = pkgs.vimPlugins.vim-unison;
+          vim-unison = pkgs.vimPlugins.vim-unison;
 
-            inherit (pkgs) prep-unison-scratch buildUnisonFromTranscript buildUnisonShareProject;
-          };
+          inherit (pkgs) prep-unison-scratch buildUnisonFromTranscript buildUnisonShareProject;
+        };
 
-          defaultPackage = ucm;
-        }
-      ) // { inherit overlay; };
+        defaultPackage = ucm;
+
+        formatter = pkgs.alejandra;
+      }
+    )
+    // {inherit overlay;};
 }
