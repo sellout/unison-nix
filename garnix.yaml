@@ -1,0 +1,4 @@
+builds:
+  exclude:
+  # garnix doesn’t support x86_64-darwin.
+  - 'homeConfigurations.x86_64-darwin-example'
