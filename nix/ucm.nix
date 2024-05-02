@@ -25,7 +25,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 {
   autoPatchelfHook,
-  darwin-security-hack ? null,
+  darwin-security-hack,
   fetchurl,
   fzf,
   git,
@@ -74,15 +74,12 @@ in
 
     nativeBuildInputs = [installShellFiles makeWrapper] ++ lib.optional (!stdenv.isDarwin) autoPatchelfHook;
 
-    darwinBuildInputs = lib.optional (darwin-security-hack != null) darwin-security-hack;
-    nonDarwinBuildInputs = [gmp];
-
     buildInputs =
       [git less fzf ncurses zlib]
       ++ (
         if (stdenv.isDarwin)
-        then darwinBuildInputs
-        else nonDarwinBuildInputs
+        then [darwin-security-hack]
+        else [gmp]
       );
 
     binPath = lib.makeBinPath buildInputs;
@@ -117,7 +114,7 @@ in
       homepage = "https://unisonweb.org/";
       license = with licenses; [mit bsd3];
       maintainers = [maintainers.ceedubs];
-      platforms = ["x86_64-darwin" "x86_64-linux"];
+      platforms = ["aarch64-darwin" "x86_64-darwin" "x86_64-linux"];
       mainProgram = "ucm";
     };
   }
