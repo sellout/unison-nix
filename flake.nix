@@ -23,6 +23,13 @@
   }: let
     systems = flake-utils.lib.defaultSystems;
 
+    tree-sitter-unison-github = {
+      owner = "kylegoetz";
+      repo = "tree-sitter-unison";
+      rev = "1.1.4";
+      sha256 = "89vFguMlPfKzQ4nmMNdTNFcEiCYH0eSws87Llm88e+I=";
+    };
+
     localPackages = pkgs: let
       darwin-security-hack = pkgs.callPackage ./nix/darwin-security-hack.nix {};
     in {
@@ -57,6 +64,10 @@
         in {
           inherit (localPkgs) prep-unison-scratch;
 
+          tree-sitter = prev.tree-sitter.override {
+            extraGrammars = self.lib.tree-sitter-grammars final;
+          };
+
           ## Renamed to replace the `unison-ucm` included in Nixpkgs.
           unison-ucm = localPkgs.ucm;
 
@@ -81,6 +92,24 @@
           pkgs.callPackage ./nix/build-share-project.nix {
             buildUnisonFromTranscript = buildUnisonFromTranscript pkgs;
           };
+
+        ## This is automatically added to the available `tree-sitter` grammars
+        ## in the default overlay. However, `extraGrammars` doesn’t compose, so
+        ## if another overlay also provides a grammar, one will overwrite the
+        ## other. The way around that is to explicitly combine the grammars in a
+        ## final overlay,
+        ##
+        ##    final: prev: {
+        ##      tree-sitter = prev.tree-sitter.override {
+        ##        extraGrammars =
+        ##          unison-nix.lib.tree-sitter-grammars final
+        ##          // <grammars from other flakes>;
+        ##      };
+        ##    }
+        tree-sitter-grammars = pkgs: {
+          tree-sitter-unison.src =
+            pkgs.fetchFromGitHub tree-sitter-unison-github;
+        };
       };
 
       homeConfigurations = builtins.listToAttrs (map (system: {
@@ -93,7 +122,12 @@
           modules = [
             ({pkgs, ...}: {
               home = {
-                packages = [pkgs.unison-ucm];
+                packages = [
+                  (pkgs.tree-sitter.withPlugins (tpkgs: [
+                    tpkgs.tree-sitter-unison
+                  ]))
+                  pkgs.unison-ucm
+                ];
                 stateVersion = "23.11";
                 username = "example";
                 homeDirectory = "/home/example";
