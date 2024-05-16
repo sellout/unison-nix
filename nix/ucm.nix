@@ -43,7 +43,7 @@
 in
   stdenv.mkDerivation rec {
     pname = "unison-code-manager";
-    version = "0.5.19";
+    version = "0.5.20";
 
     src = let
       srcUrl = os: "https://github.com/unisonweb/unison/releases/download/release/${version}/ucm-${os}.tar.gz";
@@ -54,11 +54,11 @@ in
         if (stdenv.isDarwin)
         then {
           os = "macos";
-          sha256 = "1sa032xgz3hz39pwh9sd71i105kaiimqyj303s0imr5qcnkf7xpz";
+          sha256 = "1hg5958xkyi16l3anhyyn38gnr4m5h5x6rsxvvgwdgx85nmkf4lf";
         }
         else {
           os = "linux";
-          sha256 = "1431z4sxvvzdwrsrifkpqvdgdy1jaskzrjlh1r38xfl8m5bs4v6x";
+          sha256 = "0313vbyyhzsj3lczkwdnsdh8lylq43wk1xp2v2j6hn05qd3b9s9h";
         };
     in
       fetchurl {
@@ -85,7 +85,7 @@ in
     binPath = lib.makeBinPath buildInputs;
 
     installPhase = ''
-      install -D -m555 -T ucm ${ucm}
+      install -D -m555 -T unison/unison ${ucm}
 
       mv ui ${ui}
 
