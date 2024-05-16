@@ -85,7 +85,7 @@ in
     binPath = lib.makeBinPath buildInputs;
 
     installPhase = ''
-      install -D -m555 -T ucm ${ucm}
+      install -D -m555 -T unison/unison ${ucm}
 
       mv ui ${ui}
 
