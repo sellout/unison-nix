@@ -79,15 +79,17 @@
         };
 
         emacs = final: prev: efinal: eprev: {
-          unison-ts-mode = efinal.trivialBuild {
+          unison-ts-mode = let
+            version = "1.0.0-rc.2";
+          in efinal.trivialBuild {
+            inherit version;
             pname = "unison-ts-mode";
-            version = "1.0.0-rc.1";
 
             src = final.fetchFromGitHub {
               owner = "fmguerreiro";
               repo = "unison-ts-mode";
-              rev = "main";
-              sha256 = "GwF5//vnrdANGWz8gDv7Oi79UDGej88VXtnalV85f6o=";
+              rev = "v${version}";
+              sha256 = "R3A1z8wzhDCy3KGZ7ZMbAed3VmKwdExsUyxD2X8ZtoM=";
             };
           };
         };
