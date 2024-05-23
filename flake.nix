@@ -35,8 +35,6 @@
     in {
       ucm = pkgs.callPackage ./nix/ucm.nix {inherit darwin-security-hack;};
 
-      prep-unison-scratch = pkgs.callPackage ./nix/prep-unison-scratch {};
-
       vim-unison = pkgs.vimUtils.buildVimPlugin {
         name = "vim-unison";
         src = unison + "/editor-support/vim";
@@ -62,7 +60,6 @@
         default = final: prev: let
           localPkgs = localPackages final;
         in {
-          inherit (localPkgs) prep-unison-scratch;
 
           emacsPackagesFor = emacs:
             (prev.emacsPackagesFor emacs).overrideScope'
