@@ -37,7 +37,7 @@ Compile functions from a project hosted on Unison Share into executables.
   examples.snake.main` will generate a `/bin/snake` executable out of the
   function `examples.snake.main : '{IO, Exception} ()`.
   */
-  executables ? {pname = "main";},
+  executables ? builtins.listToAttrs [{name = args.pname; value = "main";}],
   meta ? {},
 } @ args: let
   compileCommands =
