@@ -10,20 +10,14 @@
   };
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
-    flake-utils.url = "github:numtide/flake-utils";
+    unison.url = "github:sellout/unison/update-flake"; # "github:unisonweb/unison/release/1.3.0";
+
+    nixpkgs.follows = "unison/nixpkgs";
+    flake-utils.follows = "unison/flake-utils";
+
     home-manager = {
       inputs.nixpkgs.follows = "nixpkgs";
-      url = "github:nix-community/home-manager/release-25.11";
-    };
-    unison = {
-      ## NB: This doesn’t override Nixpkgs, because Unison relies heavily on
-      ##     haskell.nix and its own Cachix cache.
-      inputs.flake-utils.follows = "flake-utils";
-      ## NB: Before upgrading this, make sure the release you upgrade to is
-      ##     pinned in the cache (https://app.cachix.org/cache/unison#pins) for
-      ##     all supported systems.
-      url = "github:unisonweb/unison/release/1.3.0";
+      url = "github:nix-community/home-manager/release-26.05";
     };
   };
 
