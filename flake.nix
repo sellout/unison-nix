@@ -30,6 +30,10 @@
   }: let
     systems = flake-utils.lib.defaultSystems;
 
+    ## TODO: This isn’t a flake input, because we need to extract the owner,
+    ##       etc. fo Emacs support. We need to either figure out how to get
+    ##       Emacs to read the grammar from Nix, or need to wait until flakes
+    ##       support constucting inputs.
     tree-sitter-unison-github = {
       owner = "kylegoetz";
       repo = "tree-sitter-unison";
@@ -143,9 +147,12 @@
             (prev.emacsPackagesFor emacs).overrideScope
             (self.overlays.emacs final prev);
 
-          tree-sitter = prev.tree-sitter.override {
-            extraGrammars = self.overlays.tree-sitter final prev;
-          };
+          ## TODO: NixOS/nixpkgs#408414 removed `extraGrammars`, so need to find
+          ##       another way to do this (but Nixpkgs does provide the Unison
+          ##       grammar directly).
+          # tree-sitter = prev.tree-sitter.override {
+          #   extraGrammars = self.overlays.tree-sitter final prev;
+          # };
 
           unison.lib = local.packagesLib final;
 
